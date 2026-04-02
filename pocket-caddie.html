@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Pocket Caddie</title>
+<style>
+:root{
+  --green:#1a6b3c;--green-d:#0f4425;--green-l:#e8f5ee;--green-m:#2d8a52;
+  --amber:#b86e0a;--amber-l:#fef3e2;
+  --blue:#1a5c8a;--blue-l:#e8f2fb;
+  --red:#b83232;--red-l:#fdeaea;
+  --bg:#f2f0eb;--sfc:#ffffff;--bdr:rgba(0,0,0,0.11);
+  --tx:#1a1a1a;--mu:#6b6b6b;--mu2:#aaa;
+  --r:13px;--rs:9px;
+  --f:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:var(--f);background:var(--bg);color:var(--tx);max-width:480px;margin:0 auto;min-height:100vh;}
+
+header{background:var(--green);color:#fff;padding:13px 16px 11px;position:sticky;top:0;z-index:20;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;margin-bottom:1px;}
+header h1{font-size:19px;font-weight:700;letter-spacing:-.2px;}
+.hs{font-size:12px;opacity:.75;}
+.htagline{font-size:11px;opacity:.6;margin-top:2px;}
+
+.tabs{display:flex;background:var(--sfc);border-bottom:1px solid var(--bdr);position:sticky;top:56px;z-index:19;}
+.tab{flex:1;padding:11px 2px;font-size:13px;font-weight:500;color:var(--mu);text-align:center;cursor:pointer;border-bottom:2.5px solid transparent;}
+.tab.on{color:var(--green);border-bottom-color:var(--green);}
+
+.content{padding:12px 12px 60px;}
+.card{background:var(--sfc);border-radius:var(--r);border:1px solid var(--bdr);padding:13px 15px;margin-bottom:10px;}
+.ct{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:10px;}
+
+/* inputs */
+.inp{width:100%;padding:10px 8px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--bg);font-size:17px;font-weight:600;font-family:var(--f);color:var(--tx);text-align:center;-webkit-appearance:none;}
+.inp:focus{outline:none;border-color:var(--green);background:#fff;}
+.inp-sm{width:100%;padding:7px 6px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--bg);font-size:15px;font-weight:600;font-family:var(--f);color:var(--tx);text-align:center;-webkit-appearance:none;}
+.inp-sm:focus{outline:none;border-color:var(--green);background:#fff;}
+.inp-txt{padding:9px 10px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--bg);font-size:14px;font-family:var(--f);color:var(--tx);-webkit-appearance:none;width:100%;}
+.inp-txt:focus{outline:none;border-color:var(--green);}
+.ilabel{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);margin-bottom:4px;}
+.ihint{font-size:11px;color:var(--mu2);text-align:center;margin-top:3px;}
+.wind-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* badges */
+.summary{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:24px;}
+.badge{font-size:12px;font-weight:500;padding:4px 10px;border-radius:99px;}
+.bw{background:var(--blue-l);color:var(--blue);}
+.bt{background:var(--green-l);color:var(--green);}
+.btemp{background:var(--amber-l);color:var(--amber);}
+.balt{background:#f0ede8;color:#5a5040;}
+.bn{background:#ececec;color:var(--mu);}
+
+/* club cards */
+.cc{background:var(--sfc);border-radius:var(--r);border:1px solid var(--bdr);margin-bottom:8px;overflow:hidden;}
+.cc.open{border-color:var(--green-m);}
+.ch{display:flex;align-items:center;padding:11px 14px;cursor:pointer;gap:10px;}
+.cn{font-size:17px;font-weight:600;flex:1;}
+
+/* dual yardage columns */
+.yds-cols{display:flex;gap:6px;align-items:stretch;}
+.yds-col{display:flex;flex-direction:column;align-items:center;padding:6px 10px;border-radius:var(--rs);min-width:72px;}
+.yds-col.head-col{background:var(--red-l);}
+.yds-col.tail-col{background:var(--green-l);}
+.yds-col.base-col{background:#f0ede8;}
+.yds-num{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;}
+.yds-col.head-col .yds-num{color:var(--red);}
+.yds-col.tail-col .yds-num{color:var(--green-m);}
+.yds-col.base-col .yds-num{color:#5a5040;}
+.yds-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.yds-col.head-col .yds-lbl{color:var(--red);}
+.yds-col.tail-col .yds-lbl{color:var(--green-m);}
+.yds-col.base-col .yds-lbl{color:#7a7060;}
+.yds-adj{font-size:10px;margin-top:1px;font-variant-numeric:tabular-nums;}
+.yds-col.head-col .yds-adj{color:var(--red);}
+.yds-col.tail-col .yds-adj{color:var(--green-m);}
+.yds-col.base-col .yds-adj{color:#9a9080;}
+
+.chv{font-size:10px;color:var(--mu);transition:transform .2s;flex-shrink:0;}
+.cc.open .chv{transform:rotate(180deg);}
+
+/* detail */
+.det{display:none;border-top:1px solid var(--bdr);background:#fafaf8;}
+.cc.open .det{display:block;}
+.di{padding:10px 14px 13px;}
+
+/* shot table */
+.shot-table{width:100%;border-collapse:collapse;margin-bottom:2px;}
+.shot-table th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mu);padding:4px 6px 6px;text-align:right;}
+.shot-table th:first-child{text-align:left;}
+.shot-table td{font-size:14px;padding:5px 6px;font-variant-numeric:tabular-nums;text-align:right;border-top:1px solid rgba(0,0,0,.05);}
+.shot-table td:first-child{text-align:left;color:var(--mu);font-size:13px;}
+.shot-table td.hd{color:var(--red);font-weight:600;}
+.shot-table td.tl{color:var(--green-m);font-weight:600;}
+.shot-table td.bs{color:#7a7060;font-weight:500;}
+
+/* inline slope */
+.sdiv{height:1px;background:var(--bdr);margin:10px 0;}
+.slope-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.slope-lbl{font-size:12px;color:var(--mu);flex-shrink:0;}
+.slope-dir{display:flex;gap:5px;}
+.sdbtn{padding:6px 11px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--bg);font-size:13px;font-weight:500;font-family:var(--f);cursor:pointer;color:var(--mu);}
+.sdbtn.on{background:var(--green-l);border-color:var(--green);color:var(--green);}
+.sres{font-size:13px;font-weight:600;padding:5px 10px;border-radius:var(--rs);}
+.sres.sl{background:var(--blue-l);color:var(--blue);}
+.sres.sr2{background:var(--red-l);color:var(--red);}
+.sres.sn2{color:var(--mu2);font-weight:400;font-size:12px;}
+
+/* buttons */
+.btn{height:36px;min-width:36px;padding:0 9px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:14px;font-family:var(--f);font-weight:500;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+.btn:active{opacity:.7;transform:scale(.94);}
+.pbtn{padding:9px 13px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--bg);font-size:13px;font-weight:500;font-family:var(--f);cursor:pointer;color:var(--tx);white-space:nowrap;}
+.pbtn.g{background:var(--green);color:#fff;border-color:var(--green);}
+.pbtn.r{background:var(--red-l);color:var(--red);border-color:rgba(184,50,50,.3);}
+
+/* edit */
+.er{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bdr);}
+.er:last-child{border-bottom:none;}
+.en{font-size:15px;font-weight:500;width:48px;}
+.ev{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;min-width:36px;text-align:center;}
+.prof-row{display:flex;gap:7px;align-items:center;margin-bottom:10px;}
+.prof-sel{flex:1;padding:9px 10px;border-radius:var(--rs);border:1px solid var(--bdr);background:var(--bg);font-size:14px;font-family:var(--f);color:var(--tx);-webkit-appearance:none;min-width:0;}
+.prof-sel:focus{outline:none;border-color:var(--green);}
+.new-row{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr);}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+.mo{background:var(--sfc);border-radius:var(--r) var(--r) 0 0;padding:20px 18px 40px;width:100%;max-width:480px;}
+.mo h2{font-size:16px;font-weight:600;margin-bottom:14px;}
+.mo input{width:100%;padding:12px;border-radius:var(--rs);border:1px solid var(--bdr);font-size:16px;font-family:var(--f);margin-bottom:12px;-webkit-appearance:none;background:var(--bg);}
+.mo input:focus{outline:none;border-color:var(--green);}
+.mbtns{display:flex;gap:8px;}
+.mbtns button{flex:1;padding:13px;border-radius:var(--rs);border:none;font-size:15px;font-weight:600;font-family:var(--f);cursor:pointer;}
+.mbtns .ok{background:var(--green);color:#fff;}
+.mbtns .cn2{background:var(--bg);color:var(--tx);}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow1">
+    <h1>⛳ Pocket Caddie</h1>
+    <span class="hs" id="hs">Standard</span>
+  </div>
+  <div class="htagline">A caddie in your pocket. Wind, temp &amp; altitude — funny lie? Add slope too.</div>
+</header>
+
+<div class="tabs">
+  <div class="tab on" onclick="ST('c')">Conditions</div>
+  <div class="tab" onclick="ST('e')">My clubs</div>
+  <div class="tab" onclick="ST('p')">Profiles</div>
+</div>
+
+<div class="content">
+
+  <!-- CONDITIONS TAB -->
+  <div id="tc">
+    <div class="card">
+      <div class="ct">Wind (mph)</div>
+      <div class="wind-grid">
+        <div>
+          <div class="ilabel">Headwind</div>
+          <input class="inp" type="number" id="ihead" value="0" min="0" max="50" inputmode="decimal" oninput="UI()">
+          <div class="ihint">Into you &#8593;</div>
+        </div>
+        <div>
+          <div class="ilabel">Tailwind</div>
+          <input class="inp" type="number" id="itail" value="0" min="0" max="50" inputmode="decimal" oninput="UI()">
+          <div class="ihint">Behind you &#8595;</div>
+        </div>
+      </div>
+      <div class="ct" style="margin-top:8px;">Temperature &amp; altitude</div>
+      <div class="cond-grid">
+        <div>
+          <div class="ilabel">Temp °C</div>
+          <input class="inp" type="number" id="itemp" value="15" min="-20" max="50" inputmode="decimal" oninput="UI()">
+        </div>
+        <div>
+          <div class="ilabel">Altitude ft</div>
+          <input class="inp" type="number" id="ialt" value="50" min="0" max="9000" inputmode="decimal" oninput="UI()">
+        </div>
+      </div>
+    </div>
+    <div class="summary" id="sum"></div>
+    <div id="cl"></div>
+  </div>
+
+  <!-- MY CLUBS TAB -->
+  <div id="te" class="hidden">
+    <div class="card">
+      <div class="ct">Profile: <span id="cpname" style="text-transform:none;letter-spacing:0;font-size:13px;color:var(--tx);">Default</span></div>
+      <p style="font-size:13px;color:var(--mu);margin-bottom:12px;">Adjust base full-swing yardages. Shot distances scale proportionally.</p>
+      <div id="el"></div>
+      <div class="new-row">
+        <input class="inp-txt" type="text" id="nc-n" placeholder="Club (e.g. 4i)" maxlength="6" style="flex:1;">
+        <input class="inp-txt" type="number" id="nc-y" placeholder="Yds" inputmode="numeric" style="width:80px;flex:none;">
+        <button class="pbtn g" onclick="addClub()">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILES TAB -->
+  <div id="tp" class="hidden">
+    <div class="card">
+      <div class="ct">Profiles</div>
+      <p style="font-size:13px;color:var(--mu);margin-bottom:12px;">Each profile stores its own club yardages. Switch to compare setups instantly.</p>
+      <div class="prof-row">
+        <select class="prof-sel" id="psel" onchange="switchProf()"></select>
+        <button class="pbtn g" onclick="showModal()">+ New</button>
+        <button class="pbtn r" onclick="delProf()">Delete</button>
+      </div>
+      <div id="pinfo" style="font-size:13px;color:var(--mu);"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Profile ideas</div>
+      <p style="font-size:13px;color:var(--mu);line-height:1.8;">
+        <strong>Winter irons</strong> — shorter distances on cold days<br>
+        <strong>New irons</strong> — freshly fitted clubs<br>
+        <strong>Demo set</strong> — testing a different set<br>
+        <strong>Summer</strong> — peak-condition yardages
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="ov hidden" id="modal">
+  <div class="mo">
+    <h2>New profile</h2>
+    <input type="text" id="mo-inp" placeholder="e.g. Winter irons" maxlength="30">
+    <div class="mbtns">
+      <button class="cn2" onclick="closeModal()">Cancel</button>
+      <button class="ok" onclick="createProf()">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var DEF=[
+  {n:'5i', f:168,q:141,e:133,o:123,ni:111,hw:1.5,tw:1,  tc:0.27,af:2  },
+  {n:'6i', f:161,q:135,e:127,o:118,ni:106,hw:1.4,tw:1,  tc:0.26,af:1.9},
+  {n:'7i', f:150,q:126,e:119,o:110,ni:99, hw:1.4,tw:0.9,tc:0.24,af:1.8},
+  {n:'8i', f:140,q:118,e:111,o:102,ni:92, hw:1.3,tw:0.8,tc:0.22,af:1.7},
+  {n:'9i', f:128,q:108,e:101,o:93, ni:84, hw:1.2,tw:0.8,tc:0.2, af:1.5},
+  {n:'PW', f:114,q:96, e:90, o:83, ni:75, hw:1,  tw:0.7,tc:0.18,af:1.4},
+  {n:'AW', f:99, q:83, e:78, o:72, ni:65, hw:0.9,tw:0.6,tc:0.16,af:1.2},
+  {n:'52°',f:99, q:83, e:78, o:72, ni:65, hw:0.9,tw:0.6,tc:0.16,af:1.2},
+  {n:'56°',f:86, q:72, e:68, o:63, ni:57, hw:0.8,tw:0.5,tc:0.14,af:1  }
+];
+
+var state;
+try{var s=localStorage.getItem('pcV1');state=s?JSON.parse(s):null;}catch(e){state=null;}
+if(!state){state={ap:'Default',profiles:{'Default':DEF.map(function(c){return Object.assign({},c);})}};}
+
+var exp=null, SD={}, SDr={};
+
+function GC(){return state.profiles[state.ap]||[];}
+function sv(){try{localStorage.setItem('pcV1',JSON.stringify(state));}catch(e){}}
+
+function gv(id,def){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?def:v;}
+function gHead(){return Math.max(0,gv('ihead',0));}
+function gTail(){return Math.max(0,gv('itail',0));}
+function gTemp(){return gv('itemp',15);}
+function gAlt() {return Math.max(0,gv('ialt',0));}
+
+// separate head and tail deltas — never combined
+function calcHead(c){
+  var h=gHead();
+  var td=(gTemp()-15)*c.tc;
+  var ad=(gAlt()/1000)*c.af;
+  var wd=h>0?-(h*c.hw):0;
+  return{wd:Math.round(wd),td:Math.round(td),ad:Math.round(ad)};
+}
+function calcTail(c){
+  var t=gTail();
+  var td=(gTemp()-15)*c.tc;
+  var ad=(gAlt()/1000)*c.af;
+  var wd=t>0?(t*c.tw):0;
+  return{wd:Math.round(wd),td:Math.round(td),ad:Math.round(ad)};
+}
+function calcBase(c){
+  var td=(gTemp()-15)*c.tc;
+  var ad=(gAlt()/1000)*c.af;
+  return{wd:0,td:Math.round(td),ad:Math.round(ad)};
+}
+function totD(d){return d.wd+d.td+d.ad;}
+function aY(b,d){return Math.round(b+totD(d));}
+
+function showMode(){
+  var h=gHead(), t=gTail();
+  if(h>0&&t>0) return 'both';
+  if(h>0) return 'head';
+  if(t>0) return 'tail';
+  return 'base';
+}
+
+function RC(){
+  var el=document.getElementById('cl');
+  if(!el)return;
+  el.innerHTML='';
+  var mode=showMode();
+  GC().forEach(function(c,i){
+    var dh=calcHead(c), dt=calcTail(c), db=calcBase(c);
+    var div=document.createElement('div');
+    div.className='cc'+(exp===i?' open':'');
+
+    // build yardage columns based on mode
+    var colsHtml='';
+    if(mode==='both'){
+      var hTot=totD(dh), tTot=totD(dt);
+      var hSign=hTot<=0?'':'+'; var tSign=tTot>=0?'+':'';
+      colsHtml=
+        '<div class="yds-col head-col">'+
+          '<div class="yds-num">'+aY(c.f,dh)+'</div>'+
+          '<div class="yds-lbl">&#8593; Head</div>'+
+          '<div class="yds-adj">'+hSign+hTot+' yds</div>'+
+        '</div>'+
+        '<div class="yds-col tail-col">'+
+          '<div class="yds-num">'+aY(c.f,dt)+'</div>'+
+          '<div class="yds-lbl">&#8595; Tail</div>'+
+          '<div class="yds-adj">'+tSign+tTot+' yds</div>'+
+        '</div>';
+    } else if(mode==='head'){
+      var hTot=totD(dh);
+      var hSign=hTot<=0?'':'+';
+      colsHtml=
+        '<div class="yds-col head-col">'+
+          '<div class="yds-num">'+aY(c.f,dh)+'</div>'+
+          '<div class="yds-lbl">&#8593; Headwind</div>'+
+          '<div class="yds-adj">'+hSign+hTot+' yds</div>'+
+        '</div>';
+    } else if(mode==='tail'){
+      var tTot=totD(dt);
+      var tSign=tTot>=0?'+':'';
+      colsHtml=
+        '<div class="yds-col tail-col">'+
+          '<div class="yds-num">'+aY(c.f,dt)+'</div>'+
+          '<div class="yds-lbl">&#8595; Tailwind</div>'+
+          '<div class="yds-adj">'+tSign+tTot+' yds</div>'+
+        '</div>';
+    } else {
+      var bTot=totD(db);
+      var bSign=bTot>=0?'+':'';
+      var bLabel=bTot!==0?bSign+bTot+' yds':'Base';
+      colsHtml=
+        '<div class="yds-col base-col">'+
+          '<div class="yds-num">'+aY(c.f,db)+'</div>'+
+          '<div class="yds-lbl">Adjusted</div>'+
+          '<div class="yds-adj">'+bLabel+'</div>'+
+        '</div>';
+    }
+
+    // detail shot table
+    var shots=[['Full swing',c.f],['3/4 swing',c.q],["11 o'clock",c.e],["10 o'clock",c.o],["9 o'clock",c.ni]];
+    var tableRows=shots.map(function(s){
+      var base=s[1];
+      var hdCell='', tlCell='', bsCell='';
+      if(mode==='both'||mode==='head') hdCell='<td class="hd">'+aY(base,dh)+'</td>';
+      if(mode==='both'||mode==='tail') tlCell='<td class="tl">'+aY(base,dt)+'</td>';
+      if(mode==='base') bsCell='<td class="bs">'+aY(base,db)+'</td>';
+      return '<tr><td>'+s[0]+'</td>'+hdCell+tlCell+bsCell+'</tr>';
+    }).join('');
+    var thHead = (mode==='both'||mode==='head') ? '<th>&#8593; Head</th>' : '';
+    var thTail = (mode==='both'||mode==='tail') ? '<th>&#8595; Tail</th>' : '';
+    var thBase = mode==='base' ? '<th>Yds</th>' : '';
+    var tableHtml='<table class="shot-table"><thead><tr><th>Shot</th>'+thHead+thTail+thBase+'</tr></thead><tbody>'+tableRows+'</tbody></table>';
+
+    // slope
+    var sd=SD[i]||0, sdir=SDr[i]||'l';
+    var sresHtml;
+    if(sd>0){
+      var sy=(sd*1.4).toFixed(1);
+      sresHtml='<span class="sres '+(sdir==='l'?'sl':'sr2')+'">'+(sdir==='l'?'&#9664; Aim '+sy+' yds L':'Aim '+sy+' yds R &#9654;')+'</span>';
+    } else {
+      sresHtml='<span class="sres sn2">No slope</span>';
+    }
+
+    div.innerHTML=
+      '<div class="ch" onclick="TG('+i+')">'+
+        '<span class="cn">'+c.n+'</span>'+
+        '<div class="yds-cols">'+colsHtml+'</div>'+
+        '<span class="chv">&#9660;</span>'+
+      '</div>'+
+      '<div class="det"><div class="di">'+
+        tableHtml+
+        '<div class="sdiv"></div>'+
+        '<div class="slope-row">'+
+          '<span class="slope-lbl">Slope:</span>'+
+          '<input class="inp-sm" type="number" inputmode="decimal" min="0" max="30" value="'+sd+'" style="width:62px;" oninput="setSD('+i+',this.value)" placeholder="°">'+
+          '<div class="slope-dir">'+
+            '<button class="sdbtn'+(sdir==='l'?' on':'')+'" onclick="setSDr('+i+',\'l\')">&#9664; L</button>'+
+            '<button class="sdbtn'+(sdir==='r'?' on':'')+'" onclick="setSDr('+i+',\'r\')">R &#9654;</button>'+
+          '</div>'+
+          sresHtml+
+        '</div>'+
+      '</div></div>';
+    el.appendChild(div);
+  });
+}
+
+function setSD(i,v){SD[i]=Math.max(0,Math.min(30,parseFloat(v)||0));RC();}
+function setSDr(i,d){SDr[i]=d;RC();}
+function TG(i){exp=exp===i?null:i;RC();}
+
+function RS(){
+  var h=gHead(),t=gTail(),temp=gTemp(),alt=gAlt();
+  var b='',hs='Standard';
+  if(h>0){b+='<span class="badge bw">'+h+'mph &#8593; head</span>';hs=h+'mph head';}
+  if(t>0){b+='<span class="badge bt">'+t+'mph &#8595; tail</span>';if(h===0)hs=t+'mph tail';}
+  if(temp!==15)b+='<span class="badge btemp">'+temp+'°C</span>';
+  if(alt>0)b+='<span class="badge balt">'+alt+'ft</span>';
+  if(!b)b='<span class="badge bn">Standard conditions</span>';
+  document.getElementById('sum').innerHTML=b;
+  document.getElementById('hs').textContent=hs;
+}
+
+function UI(){RC();RS();}
+
+function RE(){
+  var el=document.getElementById('el');
+  if(!el)return;
+  var pn=document.getElementById('cpname');
+  if(pn)pn.textContent=state.ap;
+  el.innerHTML='';
+  GC().forEach(function(c,i){
+    var row=document.createElement('div');
+    row.className='er';
+    row.innerHTML=
+      '<span class="en">'+c.n+'</span>'+
+      '<div style="display:flex;align-items:center;gap:5px;">'+
+        '<button class="btn" onclick="EC('+i+',-5)">&#8722;5</button>'+
+        '<button class="btn" onclick="EC('+i+',-1)">&#8722;1</button>'+
+        '<span class="ev">'+c.f+'</span>'+
+        '<button class="btn" onclick="EC('+i+',1)">+1</button>'+
+        '<button class="btn" onclick="EC('+i+',5)">+5</button>'+
+        '<button class="btn" style="color:var(--red);" onclick="remC('+i+')">&#10005;</button>'+
+      '</div>';
+    el.appendChild(row);
+  });
+}
+
+function EC(i,d){
+  var c=GC()[i],old=c.f;
+  c.f=Math.max(20,c.f+d);
+  var r=c.f/old;
+  c.q=Math.round(c.q*r);c.e=Math.round(c.e*r);c.o=Math.round(c.o*r);c.ni=Math.round(c.ni*r);
+  sv();RE();RC();
+}
+
+function remC(i){
+  var clubs=GC();
+  if(clubs.length<=1)return;
+  clubs.splice(i,1);
+  sv();RE();RC();
+}
+
+function addClub(){
+  var name=document.getElementById('nc-n').value.trim();
+  var yds=parseInt(document.getElementById('nc-y').value)||0;
+  if(!name||yds<10){alert('Enter a club name and yardage.');return;}
+  var clubs=GC();
+  var near=clubs.reduce(function(b,c){return Math.abs(c.f-yds)<Math.abs(b.f-yds)?c:b;},clubs[0]);
+  clubs.push({n:name,f:yds,
+    q:Math.round(yds*near.q/near.f),e:Math.round(yds*near.e/near.f),
+    o:Math.round(yds*near.o/near.f),ni:Math.round(yds*near.ni/near.f),
+    hw:near.hw,tw:near.tw,tc:near.tc,af:near.af});
+  document.getElementById('nc-n').value='';
+  document.getElementById('nc-y').value='';
+  sv();RE();RC();
+}
+
+function renderProfs(){
+  var sel=document.getElementById('psel');
+  if(!sel)return;
+  sel.innerHTML='';
+  Object.keys(state.profiles).forEach(function(n){
+    var o=document.createElement('option');
+    o.value=n;o.textContent=n;
+    if(n===state.ap)o.selected=true;
+    sel.appendChild(o);
+  });
+  var pi=document.getElementById('pinfo');
+  if(pi)pi.textContent=Object.keys(state.profiles).length+' profile(s) stored on this device.';
+}
+
+function switchProf(){
+  state.ap=document.getElementById('psel').value;
+  exp=null;SD={};SDr={};
+  sv();RC();RS();RE();
+}
+
+function showModal(){
+  document.getElementById('mo-inp').value='';
+  document.getElementById('modal').classList.remove('hidden');
+  setTimeout(function(){document.getElementById('mo-inp').focus();},120);
+}
+
+function createProf(){
+  var name=document.getElementById('mo-inp').value.trim();
+  if(!name)return;
+  if(state.profiles[name]){alert('That name already exists.');return;}
+  state.profiles[name]=GC().map(function(c){return Object.assign({},c);});
+  state.ap=name;
+  exp=null;SD={};SDr={};
+  sv();closeModal();renderProfs();RC();RS();
+}
+
+function delProf(){
+  if(Object.keys(state.profiles).length<=1){alert("Can't delete the last profile.");return;}
+  if(!confirm('Delete "'+state.ap+'"?'))return;
+  delete state.profiles[state.ap];
+  state.ap=Object.keys(state.profiles)[0];
+  exp=null;SD={};SDr={};
+  sv();renderProfs();RC();RS();
+}
+
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function ST(t){
+  document.getElementById('tc').classList.toggle('hidden',t!=='c');
+  document.getElementById('te').classList.toggle('hidden',t!=='e');
+  document.getElementById('tp').classList.toggle('hidden',t!=='p');
+  document.querySelectorAll('.tab').forEach(function(el,i){
+    el.classList.toggle('on',['c','e','p'][i]===t);
+  });
+  if(t==='e')RE();
+  if(t==='p')renderProfs();
+}
+
+RC();RS();
+</script>
+</body>
+</html>
